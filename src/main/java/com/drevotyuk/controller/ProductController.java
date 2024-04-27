@@ -2,9 +2,8 @@ package com.drevotyuk.controller;
 
 import com.drevotyuk.model.Product;
 import com.drevotyuk.repository.ProductRepository;
-import java.util.Optional;
+import com.drevotyuk.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
     @Autowired
     private ProductRepository repository;
+    @Autowired
+    private ProductService service;
 
     @GetMapping
     public Iterable<Product> getAllProducts() {
@@ -28,44 +29,22 @@ public class ProductController {
 
     @GetMapping(params = "name")
     public ResponseEntity<Product> getProduct(@RequestParam String name) {
-        Optional<Product> optProduct = repository.findByName(name);
-        if (!optProduct.isPresent())
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-        return new ResponseEntity<>(optProduct.get(), HttpStatus.OK);
+        return service.getProductByName(name);
     }
 
     @PostMapping
     public ResponseEntity<Product> addProduct(@RequestBody Product product) {
-        if (repository.findByName(product.getName()).isPresent())
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-        return new ResponseEntity<>(repository.save(product), HttpStatus.CREATED);
+        return service.addProduct(product);
     }
 
     @PutMapping
     public ResponseEntity<Product> updateProduct(
             @RequestParam String name, @RequestBody Product product) {
-        Optional<Product> optInitialProduct = repository.findByName(name);
-        if (!optInitialProduct.isPresent())
-            return new ResponseEntity<>(repository.save(product), HttpStatus.CREATED);
-
-        Product initialProduct = optInitialProduct.get();
-        initialProduct.setName(product.getName());
-        initialProduct.setDescription(product.getDescription());
-        initialProduct.setPrice(product.getPrice());
-        initialProduct.setQuantity(product.getQuantity());
-
-        return new ResponseEntity<>(repository.save(initialProduct), HttpStatus.OK);
+        return service.updateProductByName(name, product);
     }
 
     @DeleteMapping
     public ResponseEntity<Product> deleteProduct(@RequestParam String name) {
-        Optional<Product> optProduct = repository.findByName(name);
-        if (!optProduct.isPresent())
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-        repository.delete(optProduct.get());
-        return new ResponseEntity<>(HttpStatus.OK);
+        return service.deleteProductByName(name);
     }
 }
