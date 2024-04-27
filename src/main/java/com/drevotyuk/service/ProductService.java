@@ -27,6 +27,9 @@ public class ProductService {
         if (repository.findByName(product.getName()).isPresent())
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
+        if (product.getPrice() < 0 || product.getQuantity() < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
         return new ResponseEntity<>(repository.save(product), HttpStatus.CREATED);
     }
 
@@ -36,8 +39,10 @@ public class ProductService {
         if (!optInitialProduct.isPresent())
             return new ResponseEntity<>(repository.save(product), HttpStatus.CREATED);
 
+        if (product.getPrice() < 0 || product.getQuantity() < 0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
         Product initialProduct = optInitialProduct.get();
-        initialProduct.setName(product.getName());
         initialProduct.setDescription(product.getDescription());
         initialProduct.setPrice(product.getPrice());
         initialProduct.setQuantity(product.getQuantity());
@@ -51,6 +56,6 @@ public class ProductService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
         repository.delete(optProduct.get());
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

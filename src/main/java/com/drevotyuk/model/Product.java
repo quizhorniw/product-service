@@ -11,7 +11,6 @@ import lombok.NonNull;
 @Entity
 @Table(name = "PRODUCTS")
 @NoArgsConstructor
-@AllArgsConstructor
 @Data
 public class Product {
     @Id
@@ -23,4 +22,12 @@ public class Product {
     private double price;
     @NonNull
     private int quantity;
+
+    public Product(@NonNull String name, @NonNull String description, @NonNull double price,
+            @NonNull int quantity) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.quantity = quantity;
+    }
 }
