@@ -52,7 +52,7 @@ public class ProductController {
 
         Product initialProduct = optInitialProduct.get();
         initialProduct.setName(product.getName());
-        initialProduct.setDescription(product.getName());
+        initialProduct.setDescription(product.getDescription());
         initialProduct.setPrice(product.getPrice());
         initialProduct.setQuantity(product.getQuantity());
 
