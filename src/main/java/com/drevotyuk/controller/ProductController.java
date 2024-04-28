@@ -29,7 +29,7 @@ public class ProductController {
 
     @GetMapping(params = "name")
     public ResponseEntity<Product> getProduct(@RequestParam String name) {
-        return service.getProductByName(name);
+        return service.getProduct(name);
     }
 
     @PostMapping
@@ -40,11 +40,11 @@ public class ProductController {
     @PutMapping
     public ResponseEntity<Product> updateProduct(
             @RequestParam String name, @RequestBody Product product) {
-        return service.updateProductByName(name, product);
+        return service.updateProduct(name, product);
     }
 
     @DeleteMapping
     public ResponseEntity<Product> deleteProduct(@RequestParam String name) {
-        return service.deleteProductByName(name);
+        return service.deleteProduct(name);
     }
 }

@@ -15,7 +15,7 @@ public class ProductService {
     @Autowired
     private ProductRepository repository;
 
-    public ResponseEntity<Product> getProductByName(@RequestParam String name) {
+    public ResponseEntity<Product> getProduct(String name) {
         Optional<Product> optProduct = repository.findByName(name);
         if (!optProduct.isPresent())
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -23,7 +23,7 @@ public class ProductService {
         return new ResponseEntity<>(optProduct.get(), HttpStatus.OK);
     }
 
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> addProduct(Product product) {
         if (repository.findByName(product.getName()).isPresent())
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
@@ -33,8 +33,7 @@ public class ProductService {
         return new ResponseEntity<>(repository.save(product), HttpStatus.CREATED);
     }
 
-    public ResponseEntity<Product> updateProductByName(
-            @RequestParam String name, @RequestBody Product product) {
+    public ResponseEntity<Product> updateProduct(String name, Product product) {
         Optional<Product> optInitialProduct = repository.findByName(name);
         if (!optInitialProduct.isPresent())
             return new ResponseEntity<>(repository.save(product), HttpStatus.CREATED);
@@ -50,7 +49,7 @@ public class ProductService {
         return new ResponseEntity<>(repository.save(initialProduct), HttpStatus.OK);
     }
 
-    public ResponseEntity<Product> deleteProductByName(@RequestParam String name) {
+    public ResponseEntity<Product> deleteProduct(String name) {
         Optional<Product> optProduct = repository.findByName(name);
         if (!optProduct.isPresent())
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
