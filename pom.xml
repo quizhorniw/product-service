@@ -5,13 +5,12 @@
   <parent>
     <groupId>com.drevotyuk</groupId>
     <artifactId>online-store-project</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
   </parent>
   <groupId>com.drevotyuk</groupId>
   <artifactId>product-service</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <name>Product Service</name>
-  <url>http://maven.apache.org</url>
   <build>
       <plugins>
           <plugin>
