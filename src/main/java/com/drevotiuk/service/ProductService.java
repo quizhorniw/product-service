@@ -1,6 +1,6 @@
 package com.drevotiuk.service;
 
-import com.drevotiuk.model.exception.EntityNotFoundException;
+import com.drevotiuk.model.exception.ProductNotFoundException;
 import com.drevotiuk.model.exception.InvalidQuantityException;
 import com.drevotiuk.model.OrderItem;
 import com.drevotiuk.model.Product;
@@ -20,13 +20,30 @@ import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service class for handling product-related business logic.
+ * <p>
+ * This service manages product retrieval and processing, including interaction
+ * with the product repository and message consumption for calculating total
+ * prices.
+ * </p>
+ */
 @Service
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
   private final ProductRepository repository;
   private final ProductServiceUtils serviceUtils;
 
+  /**
+   * Retrieves all products and maps them to {@link ProductView} objects.
+   * <p>
+   * Logs the number of products fetched.
+   * </p>
+   * 
+   * @return a {@link List} of {@link ProductView} objects representing all
+   *         products.
+   */
   public List<ProductView> findAll() {
     List<ProductView> products = repository.findAll().stream()
         .map(ProductView::new)
@@ -35,34 +52,69 @@ public class ProductService {
     return products;
   }
 
+  /**
+   * Retrieves a specific product by its ID.
+   * <p>
+   * Logs the ID of the product being fetched and throws an exception if the
+   * product is not found.
+   * </p>
+   * 
+   * @param productId the ID of the product to retrieve, must not be {@code null}.
+   * @return a {@link ProductView} object representing the product.
+   * @throws ProductNotFoundException if the product with the given ID does not
+   *                                  exist.
+   */
   public ProductView find(ObjectId productId) {
     log.info("Fetching product with ID {}", productId);
-    return new ProductView(repository.findById(productId).orElseThrow(
-        () -> serviceUtils.createEntityNotFoundException(productId)));
+    return new ProductView(serviceUtils.findById(productId));
   }
 
+  /**
+   * Consumes messages from the total price queue to calculate the total price for
+   * an order item.
+   * <p>
+   * Logs details of the received message and any exceptions encountered during
+   * processing.
+   * </p>
+   * 
+   * @param item the {@link OrderItem} containing product ID and quantity for
+   *             which to calculate the total price.
+   * @return an {@link Optional} containing the total price as a
+   *         {@link BigDecimal} if successful, or an empty {@link Optional} if an
+   *         error occurs.
+   * @throws AmqpRejectAndDontRequeueException if unexpected error happened
+   */
   @RabbitListener(queues = { "${rabbitmq.queue.total-price}" })
   public Optional<BigDecimal> consumeAndProduceTotalPrice(OrderItem item) {
     try {
       log.info("Received message for calculating total price: {}", item);
       ObjectId productId = new ObjectId(item.getProductId());
-      Product product = repository.findById(productId).orElseThrow(
-          () -> serviceUtils.createEntityNotFoundException(productId));
+      Product product = serviceUtils.findById(productId);
 
       if (product.getQty() < item.getQty())
         throw createInvalidQuantityException(productId, product.getQty(), item.getQty());
 
       return Optional.of(product.getPrice().multiply(BigDecimal.valueOf(item.getQty())));
-    } catch (EntityNotFoundException | InvalidQuantityException e) {
-      log.warn("Invalid product or quantity", e);
+    } catch (ProductNotFoundException | InvalidQuantityException e) {
+      log.warn("Invalid product or quantity");
     } catch (RuntimeException e) {
-      log.warn("Error while listening to ${rabbitmq.queue.total-price}");
+      log.warn("Unexcepted error happened while calculating total price");
       throw new AmqpRejectAndDontRequeueException(e);
     }
 
     return Optional.empty(); // Signals that something went wrong
   }
 
+  /**
+   * Creates an {@link InvalidQuantityException} with a detailed message about the
+   * invalid quantity.
+   * 
+   * @param productId   the ID of the product with the invalid quantity.
+   * @param currentQty  the current quantity of the product.
+   * @param expectedQty the expected quantity for the order.
+   * @return an {@link InvalidQuantityException} instance with the detailed
+   *         message.
+   */
   private InvalidQuantityException createInvalidQuantityException(ObjectId productId,
       int currentQty, int expectedQty) {
     log.warn("Invalid quantity of product with ID {}", productId);
