@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
   }
 
   /**
-   * Handles HTTP client errors such as {@link InvalidQuantityException}.
+   * Handles the {@link InvalidQuantityException}.
    * 
    * @param e the {@link InvalidQuantityException} thrown when invalid quantity
    *          provided
@@ -90,7 +90,7 @@ public class GlobalExceptionHandler {
   }
 
   /**
-   * Handles {@link ProductNotFoundException}.
+   * Handles the {@link ProductNotFoundException}.
    * 
    * @param e the {@link ProductNotFoundException} thrown when a product not found
    * @return a ResponseEntity containing a standardized error response
@@ -102,7 +102,7 @@ public class GlobalExceptionHandler {
   }
 
   /**
-   * Handles {@link IllegalArgumentException}.
+   * Handles the {@link IllegalArgumentException}.
    * 
    * @param e the {@link IllegalArgumentException} thrown when an
    *          illegal argument is passed

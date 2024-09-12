@@ -79,13 +79,11 @@ public class ProductService {
    * 
    * @param item the {@link OrderItem} containing product ID and quantity for
    *             which to calculate the total price.
-   * @return an {@link Optional} containing the total price as a
-   *         {@link BigDecimal} if successful, or an empty {@link Optional} if an
-   *         error occurs.
+   * @return the total price if successful, or {@code null} if an error occurs.
    * @throws AmqpRejectAndDontRequeueException if unexpected error happened
    */
   @RabbitListener(queues = { "${rabbitmq.queue.total-price}" })
-  public Optional<BigDecimal> consumeAndProduceTotalPrice(OrderItem item) {
+  public BigDecimal consumeAndProduceTotalPrice(OrderItem item) {
     try {
       log.info("Received message for calculating total price: {}", item);
       ObjectId productId = new ObjectId(item.getProductId());
@@ -94,15 +92,15 @@ public class ProductService {
       if (product.getQty() < item.getQty())
         throw createInvalidQuantityException(productId, product.getQty(), item.getQty());
 
-      return Optional.of(product.getPrice().multiply(BigDecimal.valueOf(item.getQty())));
+      return product.getPrice().multiply(BigDecimal.valueOf(item.getQty()));
     } catch (ProductNotFoundException | InvalidQuantityException e) {
       log.warn("Invalid product or quantity");
-    } catch (RuntimeException e) {
+    } catch (Exception e) {
       log.warn("Unexcepted error happened while calculating total price");
       throw new AmqpRejectAndDontRequeueException(e);
     }
 
-    return Optional.empty(); // Signals that something went wrong
+    return null; // Signals that something went wrong
   }
 
   /**
@@ -117,9 +115,8 @@ public class ProductService {
    */
   private InvalidQuantityException createInvalidQuantityException(ObjectId productId,
       int currentQty, int expectedQty) {
-    log.warn("Invalid quantity of product with ID {}", productId);
-    return new InvalidQuantityException(String.format(
-        "Not enough quantity of product with ID {}: {}; expected: {}",
-        productId, currentQty, expectedQty));
+    log.warn("Not enough quantity of product with ID {}: {}; expected: {}", productId, currentQty, expectedQty);
+    String formattedMessage = String.format("Not enough quantity: %d; expected: %d", currentQty, expectedQty);
+    return new InvalidQuantityException(formattedMessage);
   }
 }
