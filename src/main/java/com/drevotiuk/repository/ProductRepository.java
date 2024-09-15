@@ -15,4 +15,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface ProductRepository extends MongoRepository<Product, ObjectId> {
+  boolean existsByName(String name);
 }

@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
@@ -66,7 +65,7 @@ public class ProductService {
    */
   public ProductView find(ObjectId productId) {
     log.info("Fetching product with ID {}", productId);
-    return new ProductView(serviceUtils.findById(productId));
+    return new ProductView(findById(productId));
   }
 
   /**
@@ -87,7 +86,7 @@ public class ProductService {
     try {
       log.info("Received message for calculating total price: {}", item);
       ObjectId productId = new ObjectId(item.getProductId());
-      Product product = serviceUtils.findById(productId);
+      Product product = findById(productId);
 
       if (product.getQty() < item.getQty())
         throw createInvalidQuantityException(productId, product.getQty(), item.getQty());
@@ -101,6 +100,23 @@ public class ProductService {
     }
 
     return null; // Signals that something went wrong
+  }
+
+  /**
+   * Retrieves a {@link Product} by its ID.
+   * <p>
+   * Throws a {@link ProductNotFoundException} if the product with the given ID
+   * does not exist.
+   * </p>
+   * 
+   * @param productId the ID of the product to retrieve, must not be {@code null}.
+   * @return the {@link Product} object with the given ID.
+   * @throws ProductNotFoundException if the product with the given ID does not
+   *                                  exist.
+   */
+  private Product findById(ObjectId productId) {
+    return repository.findById(productId)
+        .orElseThrow(() -> serviceUtils.createProductNotFoundException(productId));
   }
 
   /**

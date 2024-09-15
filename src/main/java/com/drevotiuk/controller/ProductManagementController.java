@@ -49,7 +49,7 @@ public class ProductManagementController {
    */
   @GetMapping
   public ResponseEntity<List<ProductView>> findAll(@RequestHeader("X-User-Role") String role) {
-    Assert.isTrue(managementService.hasAccess(role), ACCESS_DENIED_MESSAGE);
+    Assert.isTrue("ADMIN".equals(role), ACCESS_DENIED_MESSAGE);
     List<ProductView> products = managementService.findAll();
     return ResponseEntity.ok(products);
   }
@@ -68,7 +68,7 @@ public class ProductManagementController {
   @GetMapping("/{productId}")
   public ResponseEntity<ProductView> find(@PathVariable ObjectId productId,
       @RequestHeader("X-User-Role") String role) {
-    Assert.isTrue(managementService.hasAccess(role), ACCESS_DENIED_MESSAGE);
+    Assert.isTrue("ADMIN".equals(role), ACCESS_DENIED_MESSAGE);
     ProductView product = managementService.find(productId);
     return ResponseEntity.ok(product);
   }
@@ -86,7 +86,7 @@ public class ProductManagementController {
   @PostMapping
   public ResponseEntity<ProductView> create(@Valid @RequestBody Product product,
       @RequestHeader("X-User-Role") String role) {
-    Assert.isTrue(managementService.hasAccess(role), ACCESS_DENIED_MESSAGE);
+    Assert.isTrue("ADMIN".equals(role), ACCESS_DENIED_MESSAGE);
     ProductView createdProduct = managementService.create(product);
     return ResponseEntity.ok(createdProduct);
   }
@@ -107,7 +107,7 @@ public class ProductManagementController {
   @PutMapping("/{productId}")
   public ResponseEntity<ProductView> update(@PathVariable ObjectId productId,
       @RequestBody Product product, @RequestHeader("X-User-Role") String role) {
-    Assert.isTrue(managementService.hasAccess(role), ACCESS_DENIED_MESSAGE);
+    Assert.isTrue("ADMIN".equals(role), ACCESS_DENIED_MESSAGE);
     ProductView updatedProduct = managementService.update(productId, product);
     return ResponseEntity.ok(updatedProduct);
   }
@@ -125,7 +125,7 @@ public class ProductManagementController {
   @DeleteMapping("/{productId}")
   public ResponseEntity<Void> delete(@PathVariable ObjectId productId,
       @RequestHeader("X-User-Role") String role) {
-    Assert.isTrue(managementService.hasAccess(role), ACCESS_DENIED_MESSAGE);
+    Assert.isTrue("ADMIN".equals(role), ACCESS_DENIED_MESSAGE);
     managementService.delete(productId);
     return ResponseEntity.noContent().build();
   }

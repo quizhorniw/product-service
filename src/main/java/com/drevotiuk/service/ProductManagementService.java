@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.drevotiuk.model.OrderItem;
 import com.drevotiuk.model.Product;
 import com.drevotiuk.model.ProductView;
+import com.drevotiuk.model.exception.ProductExistsException;
 import com.drevotiuk.repository.ProductRepository;
 import com.mongodb.MongoException;
 
@@ -66,7 +66,7 @@ public class ProductManagementService {
    */
   public ProductView find(ObjectId productId) {
     log.info("Fetching product with ID {}", productId);
-    return new ProductView(serviceUtils.findById(productId));
+    return new ProductView(findById(productId));
   }
 
   /**
@@ -81,6 +81,11 @@ public class ProductManagementService {
   public ProductView create(Product product) {
     product.setId(ObjectId.get());
     log.info("Adding new product: {}", product);
+    if (repository.existsByName(product.getName())) {
+      log.warn("Product with name {} already exists", product.getName());
+      throw new ProductExistsException(String.format("Product with name %s already exists", product.getName()));
+    }
+
     repository.save(product);
     return new ProductView(product);
   }
@@ -98,7 +103,7 @@ public class ProductManagementService {
    */
   public ProductView update(ObjectId productId, Product product) {
     log.info("Updating product with ID: {}", productId);
-    Product initialProduct = serviceUtils.findById(productId);
+    Product initialProduct = findById(productId);
     updateFields(initialProduct, product);
     repository.save(initialProduct);
     return new ProductView(initialProduct);
@@ -121,16 +126,6 @@ public class ProductManagementService {
       throw serviceUtils.createProductNotFoundException(productId);
 
     repository.deleteById(productId);
-  }
-
-  /**
-   * Checks if the given role has access to perform operations.
-   * 
-   * @param role the role to check.
-   * @return {@code true} if the role has access, otherwise {@code false}.
-   */
-  public boolean hasAccess(String role) {
-    return role.equals("ADMIN");
   }
 
   /**
@@ -166,6 +161,23 @@ public class ProductManagementService {
   }
 
   /**
+   * Retrieves a {@link Product} by its ID.
+   * <p>
+   * Throws a {@link ProductNotFoundException} if the product with the given ID
+   * does not exist.
+   * </p>
+   * 
+   * @param productId the ID of the product to retrieve, must not be {@code null}.
+   * @return the {@link Product} object with the given ID.
+   * @throws ProductNotFoundException if the product with the given ID does not
+   *                                  exist.
+   */
+  private Product findById(ObjectId productId) {
+    return repository.findById(productId)
+        .orElseThrow(() -> serviceUtils.createProductNotFoundException(productId));
+  }
+
+  /**
    * Updates the fields of the initial product with values from the updated
    * product.
    * <p>
@@ -181,12 +193,6 @@ public class ProductManagementService {
    *                be {@code null}.
    */
   private void updateFields(Product initial, Product updated) {
-    Optional.ofNullable(updated.getName())
-        .filter(name -> !name.isEmpty())
-        .ifPresent(name -> {
-          log.info("Updated name for product with ID {}: {}", initial.getId(), name);
-          initial.setName(name);
-        });
     Optional.ofNullable(updated.getCategory())
         .ifPresent(category -> {
           log.info("Updated category for product with ID {}: {}", initial.getId(), category);

@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
@@ -33,6 +34,7 @@ public class Product {
 
   /** The name of the product. */
   @NotBlank(message = "Name is required")
+  @Indexed
   private String name;
 
   /** The category of the product. */

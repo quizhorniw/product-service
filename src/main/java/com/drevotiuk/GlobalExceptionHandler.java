@@ -15,6 +15,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import com.drevotiuk.model.exception.ProductNotFoundException;
 import com.drevotiuk.model.exception.InvalidQuantityException;
+import com.drevotiuk.model.exception.ProductExistsException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -86,6 +87,19 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(InvalidQuantityException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<Map<String, String>> handleInvalidQtyException(InvalidQuantityException e) {
+    return buildErrorResponse(e, HttpStatus.BAD_REQUEST);
+  }
+
+  /**
+   * Handles the {@link ProductExistsException}.
+   * 
+   * @param e the {@link ProductExistsException} thrown when product with same
+   *          name already exists in the database
+   * @return a ResponseEntity containing a standardized error response
+   */
+  @ExceptionHandler(InvalidQuantityException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseEntity<Map<String, String>> handleProductExistsException(ProductExistsException e) {
     return buildErrorResponse(e, HttpStatus.BAD_REQUEST);
   }
 
