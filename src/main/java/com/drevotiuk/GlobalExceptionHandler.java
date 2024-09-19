@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
    *          name already exists in the database
    * @return a ResponseEntity containing a standardized error response
    */
-  @ExceptionHandler(InvalidQuantityException.class)
+  @ExceptionHandler(ProductExistsException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<Map<String, String>> handleProductExistsException(ProductExistsException e) {
     return buildErrorResponse(e, HttpStatus.BAD_REQUEST);
