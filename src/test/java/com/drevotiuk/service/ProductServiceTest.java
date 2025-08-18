@@ -26,13 +26,11 @@ import com.drevotiuk.repository.ProductRepository;
 public class ProductServiceTest {
   @Mock
   private ProductRepository productRepository;
-  private ProductServiceUtils productServiceUtils;
   private ProductService underTest;
 
   @BeforeEach
   void setUp() {
-    productServiceUtils = new ProductServiceUtils();
-    underTest = new ProductService(productRepository, productServiceUtils);
+    underTest = new ProductService(productRepository, new ProductServiceUtils());
   }
 
   @Test

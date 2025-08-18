@@ -28,15 +28,11 @@ import com.drevotiuk.repository.ProductRepository;
 public class ProductManagementServiceTest {
   @Mock
   private ProductRepository productRepository;
-  @Mock
-  private MongoTemplate mongoTemplate;
-  private ProductServiceUtils productServiceUtils;
   private ProductManagementService underTest;
 
   @BeforeEach
   void setUp() {
-    productServiceUtils = new ProductServiceUtils();
-    underTest = new ProductManagementService(productRepository, productServiceUtils, mongoTemplate);
+    underTest = new ProductManagementService(productRepository, new ProductServiceUtils(), null);
   }
 
   @Test
